@@ -14,36 +14,23 @@ struct DetailView: View {
     
     var body: some View {
         VStack {
-            List {
+            ScrollView {
                 ForEach(viewModel.entries) { entry in
-                    
-                    TextView(text: entry.content, clickedLink: $viewModel.clickedLink)
-                    HStack {
-                        Spacer()
-                        Button("Share") {
-                            
-                        }.buttonStyle(PlainButtonStyle()).font(.footnote)
-                        Button("Share") {
-                            
-                        }.buttonStyle(PlainButtonStyle()).font(.footnote)
-                        Button("Share") {
-                            
-                        }.buttonStyle(PlainButtonStyle()).font(.footnote)
-                        Button("Share") {
-                            
-                        }.buttonStyle(PlainButtonStyle()).foregroundColor(.pink).font(.footnote)
-                        Spacer()
-                    }}
+                    EntryView(entry: entry, clickedLink: $viewModel.clickedLink)
+                        .padding()
+                    Divider()
+                }
             }
-            
+            .alert(item: $viewModel.clickedLink, content: { clickedLink -> Alert in
+                return Alert(title: Text(clickedLink.text),
+                             message: Text(clickedLink.url.absoluteString),
+                             dismissButton: .default(Text("dismiss")))
+            })
+            .onAppear(perform: {
+                viewModel.getDetails()
+            })
+            .navigationBarTitle(viewModel.title)
         }
-        .alert(item: $viewModel.clickedLink, content: { clickedLink -> Alert in
-            return Alert(title: Text(clickedLink.text), message: Text(clickedLink.url.absoluteString), dismissButton: .default(Text("dismiss")))
-        })
-        .onAppear(perform: {
-            viewModel.getDetails()
-        })
-        .navigationBarTitle(viewModel.title)
     }
 }
 

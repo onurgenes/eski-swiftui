@@ -36,17 +36,26 @@ final class DetailViewModel: ObservableObject {
                 let html = responseString
                 let doc: Document = try SwiftSoup.parse(html)
                 self.title = try doc.select("#title > a > span").text()
-                let content = try doc.select("#entry-item-list > li > div.content")
-                try content.forEach { element in
+                let item = try doc.select("#entry-item-list > li")
+                
+                // #entry-item-list > li:nth-child(2) > footer > div.info > a.entry-date.permalink
+                try item.forEach { element in
+                    let authorId = try element.attr("data-author-id")
+                    let entryId = try element.attr("data-id")
+                    let content = try element.select("div.content")
+                    let footer = try element.select("footer")
+                    let date = try footer.select("div.info > a.entry-date.permalink").text()
+                    let author = try footer.select("div.info > a.entry-author").text()
+                    let favoriteCount = try footer.select("div.feedback > span.favorite-links > a.favorite-count.toggles").text()
                     
-                    let attributedString = try NSMutableAttributedString(data: element.html().data(using: .utf8)!,
+                    let attributedString = try NSMutableAttributedString(data: content.html().data(using: .utf8)!,
                                                                          options: [.documentType: NSAttributedString.DocumentType.html,
                                                                                    .characterEncoding: String.Encoding.utf8.rawValue],
                                                                          documentAttributes: nil)
                     attributedString.setBaseFont(baseFont: UIFont.preferredFont(forTextStyle: .body))
                     attributedString.addAttribute(.foregroundColor, value: UIColor.label, range: NSRange(location: 0, length: attributedString.length))
                     
-                    let entry = Entry(content: attributedString, author: "", date: "", favoritesCount: "", entryId: "", authorId: "", isFavorited: false)
+                    let entry = Entry(content: attributedString, author: author, date: date, favoritesCount: favoriteCount, entryId: entryId, authorId: authorId, isFavorited: false)
                     self.entries.append(entry)
                 }
                 
